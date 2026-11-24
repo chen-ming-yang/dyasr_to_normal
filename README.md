@@ -69,3 +69,24 @@ v6 说明音质问题可以解决：正常发音要保留一个音节内部从�
 根子是数据。常用 2500 字对应约 1008 个音节，库里只有 622 个，其中 219 个样本不超过 2 条。第 17 层是在正常语音上预训练的，1012 条单说话人构音不够把退化的发音分开。补数据时优先补容易混的声母：`z/zh`、`c/ch`、`s/sh`、`n/l`。按每个音节补到约 5 条估计，还要大约 3070 个音节样本，约 614 句。
 
 声学 top-10 的覆盖从现在的 43% 提高、n-gram 用更多句子重训之后，同一条链路的纠错才会继续上去。在这之前换合成器解决不了内容错误。
+
+## 代码
+
+实现在 `dsr/`。脚本里的数据、权重和 IndexTTS 路径写的是实验机上的绝对路径，本仓库不包含录音、特征和预训练权重。
+
+| 文件 | 作用 |
+|---|---|
+| `dsr/infer_lm.py` | 当前推理：top-10、4-gram 纠错、s2mel、BigVGAN |
+| `dsr/train_syllable_cls.py` | 音节分类器 |
+| `dsr/train_syllable_ngram.py` | 音级 4-gram |
+| `dsr/eval_topk.py` | 声学 top-K 覆盖 |
+| `dsr/sweep_lm_weight.py` | 语言模型权重扫描 |
+| `dsr/build_syllable_lib.py` | 按音节加声调建正常发音库 |
+| `dsr/infer_compare_ab.py` | 波形拼接和 s2mel 两条路的对比 |
+| `dsr/semantic_frontend.py` | 冻结的第 17 层和 RepCodec |
+| `dsr/model.py`、`dsr/train.py` | v1：构音帧回归正常 mel |
+| `dsr/train_codes.py`、`dsr/train_vec.py`、`dsr/train_char.py` | v3–v5：语义码和逐字向量 |
+| `dsr/infer_s2mel.py` | v5 接 s2mel |
+| `dsr/build_syllable_templates.py`、`dsr/infer_syllable_template.py` | v6：字级码序列检索 |
+
+s2mel 依赖本机的 IndexTTS 2 源码。`dsr/stubs/audiotools` 用来绕过它训练时才需要的 DAC 依赖。运行前把 `dsr/stubs` 放进 `PYTHONPATH`。

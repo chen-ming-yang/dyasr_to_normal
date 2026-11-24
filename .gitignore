@@ -1,0 +1,8 @@
+__pycache__/
+*.py[cod]
+*.pt
+*.pth
+*.bin
+*.wav
+*.npy
+*.npz
